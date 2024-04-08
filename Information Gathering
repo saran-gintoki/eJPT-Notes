@@ -1,0 +1,36 @@
+**web technology identifier**
+
+- browser plug ins - wappalyzer, built with (recommended)
+- tool in kali - what web
+
+Httrack - website copier
+
+netcraft - https://sitereport.netcraft.com/
+
+**dns footprinting**  
+dnsrecon - tool in kali  
+sample -> dnsrecon -d website.com  
+dnsdumpster.com (better visual output)  
+dnsenum - tool in kali, it also perform zonetransfers
+
+- sudo dnsenum —enum -f “/usr/share/dnsenum/dns.txt” salesforce.com
+
+dig - tool in kali to perform zone transfer
+fierce - tool in kali
+nslookup
+
+zonetransfer.me -- teaches about domain
+
+/etc/hosts file - consists of the ip and domain names  
+usr/share/dnsenum/dns.txt - contains a list of dns names to bruteforce
+
+wafwoof (enable security - github) - web firewall fingerprint
+
+sublister - sub domain enum
+
+google dorking  
+waybackmachine  
+google hacking database  
+theHarvester  
+spyse - search engine  
+haveibeenpwned.com
