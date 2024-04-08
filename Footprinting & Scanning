@@ -1,0 +1,24 @@
+1.  identify the scope of your test
+passive reconassaince  
+    watch network traffic  
+    **ARP** - resolve ip to mac  
+          arp-scan -I interface -g  
+    **ICMP** - ping, traceroute  
+          ping ipaddr  
+          fping -I interface -f file.txt -a
+
+netdiscover -i interface -r ippaddrrange
+
+tftp ipaddr port - tftp (udp) based file transfer protocol
+
+
+**host discovery**  
+zenmap - tool (GUI)
+
+nmap -sn ipaddrrange ---> host discovery  
+nmap -p 21 --script vuln ipaddr ---> run basic vuln scan
+nmap -sV --script=banner ipaddr ---> to grab banners of the services  
+nmap -T4 -PA -sC -sV -p 1-1000 ipaddr -oX outputfile
+nmap scripts can be found in - **/usr/share/nmap/scripts/**  
+
+to learn more about nmap - nmap.org/book/
